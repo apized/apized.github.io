@@ -2,13 +2,65 @@
 
 ## Introduction
 
-Describe the model used in the feature descriptions (use the sample's model).
+It is our belief that defining the [model](/documentation.md?id=model) is, in our not so humble opinion, both the
+initial and one of the most important steps of designing a good solution. We also believe that if we're building pure
+REST APIs, both the API and the DB model should be one and the same - with exceptions of course but the exceptions
+confirm the rule. Any interactions should be derived from manipulating the state, i.e. the model, and we should have no
+actions in our API since those are the HTTP actions.
+
+In that spirit, apized takes exactly this approach. A project's initial and one of it's most important classes are the
+models we define. By adding the `@Apized` annotation we are informing the framework that this is a central piece of our
+model and should therefore be exposed in the form of a controller (and accompanying service and repository).
+
+In the simplest case of a CRUD server this is all you would need. For more complex scenarios we add Behaviours, which
+should encapsulate small self-contained pieces of business logic.
+
+Sometimes a behaviour can be considered as a part of the service (logic shared between differnet behaviours) and for
+these cases we allow extensions the service. Repositories can also be extended to allow for custom-made queries.
 
 ## Core concepts
 
 ### Model
-### Context
+
+All models must extend the `BaseModel` class which defines a set of default fields:
+
+| Field         | Type          | Description                                                                          |
+|---------------|---------------|--------------------------------------------------------------------------------------|
+| id            | UUID          | This is defined as being a UUID and will be used as the primary key on the DB table. |
+| version       | Long          | Used for optimistic locking.                                                         |
+| createdBy     | UUID          | ID of the user that created the instance                                             |
+| createdAt     | LocalDateTime | Date & time the instance was created at                                              |
+| lastUpdatedBy | UUID          | ID of the user that last updated the instance                                        |
+| lastUpdatedAt | LocalDateTime | Date & time of the last time this instance was updated                               |
+| metadata      | UUID          | A JSON-like structure of Maps and Lists containing Primitive data types and Strings  |
+
+The `createdBy`, `createdAt`, `lastUpdatedBy` and `lastUpdatedAt` fields provide a quick audit overview of the instance
+while the `metadata` field stores data we might want to have associated with the model but is not part of our model.
+
+```java
+
+@Entity // (1)
+@Serdeable // (2)
+@Apized // (3)
+public class Organization extends BaseModel {
+  @NotBlank // (4)
+  private String name;
+}
+```
+
+> 1. `@Entity` marks the entity as being stored on the DB.
+
+> 2. `@Serdeable` marks the entity as being serializable (API).
+
+> 3. `@Apized` marks the entity as an apized entity.
+
+> 4. `@NotBlank` javax.validation.constraints for your fields.
+
 ### Behaviour
+
+### Extensions
+
+### Context
 
 ## Enhanced REST Endpoints
 
