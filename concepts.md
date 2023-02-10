@@ -1,5 +1,0 @@
-# Concepts
-
-## Model
-
-## Context

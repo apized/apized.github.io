@@ -1,4 +1,14 @@
-# Features
+# Documentation
+
+## Introduction
+
+Describe the model used in the feature descriptions (use the sample's model).
+
+## Core concepts
+
+### Model
+### Context
+### Behaviour
 
 ## Enhanced REST Endpoints
 
@@ -8,6 +18,9 @@ having
 to write a single line of code beyond your model.
 
 GET `/organizations/3fedcab7-97b7-4f81-b49f-2a70864f7cfa`
+<!-- tabs:start -->
+
+# **Response**
 
 ```json
 {
@@ -20,7 +33,12 @@ GET `/organizations/3fedcab7-97b7-4f81-b49f-2a70864f7cfa`
 }
 ```
 
+<!-- tabs:end -->
+
 GET `/organizations/3fedcab7-97b7-4f81-b49f-2a70864f7cfa/employee/e9fa40a7-3044-4328-82e9-f710a0911452`
+<!-- tabs:start -->
+
+# **Response**
 
 ```json
 {
@@ -30,11 +48,16 @@ GET `/organizations/3fedcab7-97b7-4f81-b49f-2a70864f7cfa/employee/e9fa40a7-3044-
 }
 ```
 
+<!-- tabs:end -->
+
 ### Field filtering
 
 No more over or under fetching of data, get exactly and only what you need.
 
 GET `/organizations/3fedcab7-97b7-4f81-b49f-2a70864f7cfa?fields=name`
+<!-- tabs:start -->
+
+# **Response**
 
 ```json
 {
@@ -43,11 +66,16 @@ GET `/organizations/3fedcab7-97b7-4f81-b49f-2a70864f7cfa?fields=name`
 }
 ```
 
+<!-- tabs:end -->
+
 ### Model drilling
 
 Get related data with one single request. We do model drilling for both queries and mutations.
 
 GET `/organizations/3fedcab7-97b7-4f81-b49f-2a70864f7cfa?fields=name,employees.name`
+<!-- tabs:start -->
+
+# **Response**
 
 ```json
 {
@@ -66,11 +94,16 @@ GET `/organizations/3fedcab7-97b7-4f81-b49f-2a70864f7cfa?fields=name,employees.n
 }
 ```
 
+<!-- tabs:end -->
+
 ### Smaller payloads
 
 Send only what needs to change instead of having to send the whole object.
 
 PUT `/organizations/3fedcab7-97b7-4f81-b49f-2a70864f7cfa?fields=name`
+<!-- tabs:start -->
+
+# **Request**
 
 ```json
 {
@@ -78,12 +111,16 @@ PUT `/organizations/3fedcab7-97b7-4f81-b49f-2a70864f7cfa?fields=name`
 }
 ```
 
+# **Response**
+
 ```json
 {
   "name": "Organization A",
   "id": "3fedcab7-97b7-4f81-b49f-2a70864f7cfa"
 }
 ```
+
+<!-- tabs:end -->
 
 Which also works with model drilling.
 
@@ -132,6 +169,9 @@ Because apized understands your model you get querying out of the box for any fi
 might be fetching via model drilling.
 
 GET `/organizations?search=name=Org%20A`
+<!-- tabs:start -->
+
+# **Response**
 
 ```json
 {
@@ -149,8 +189,13 @@ GET `/organizations?search=name=Org%20A`
   "metadata": {}
 }
 ```
+
+<!-- tabs:end -->
 
 GET `/organizations?search=employee.name~=Sen`
+<!-- tabs:start -->
+
+# **Response**
 
 ```json
 {
@@ -168,6 +213,8 @@ GET `/organizations?search=employee.name~=Sen`
   "metadata": {}
 }
 ```
+
+<!-- tabs:end -->
 
 ## Behaviours
 
@@ -191,6 +238,9 @@ get from calling the api itself. In order to provide flexibility you can use the
 manipulate what this snapshot will look like on your ESB message.
 
 ## Testing
+
+Testing is done with groovy & Spock for simplicity. Integratin testing also included with most of the building blocks in
+place.
 
 ## Documentation
 
@@ -242,6 +292,7 @@ instead of adding a huge number of permissions to a user.
 Typically, this is done by adding a Filter that can calculate these.
 
 ```java
+
 @Filter("/**")
 class PermissionContextEnricher implements HttpServerFilter {
   @Inject
@@ -267,7 +318,7 @@ class PermissionContextEnricher implements HttpServerFilter {
     }
     return chain.proceed(request);
   }
- 
+
   @Override
   public int getOrder() {
     return -1000;
@@ -280,4 +331,17 @@ class PermissionContextEnricher implements HttpServerFilter {
 Every instance of every server becomes an API Gateway. The only thing to bear in mind is that you must request the root
 object of your query to the servers that contain that model directly.
 
+## Engines
 
+### Micronaut
+
+[Micronaut](https://micronaut.io/) is the default underlying engine for apized. The micronaut
+advantages that make it our default choice is the reflection free approach which will drastically improve startup times.
+Apized is also fully compatible with native compilation, which means you can deploy light-weight ulta-performant native
+binaries.
+
+### Spring Boot
+
+[Spring Boot](https://spring.io/projects/spring-boot) is something we'd like to add in the future given spring boot's
+popularity, but we'd need the time and resources to do so. This implementation will probably only happen if this
+projects gets wider adoption.
