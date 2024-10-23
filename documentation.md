@@ -38,6 +38,8 @@ All models must extend the `BaseModel` class which defines a set of default fiel
 The `createdBy`, `createdAt`, `lastUpdatedBy` and `lastUpdatedAt` fields provide a quick audit overview of the instance
 while the `metadata` field stores data we might want to have associated with the model but is not part of our model.
 
+<!-- tabs:end -->
+# **Micronaut**
 ```java
 
 @Entity // (1)
@@ -47,6 +49,7 @@ public class Organization extends BaseModel {
   private String name;
 }
 ```
+<!-- tabs:start -->
 
 > 1. `@Entity` marks the entity as being stored on the DB.
 
@@ -189,7 +192,8 @@ PUT `/organizations/3fedcab7-97b7-4f81-b49f-2a70864f7cfa?fields=name`
   "name": "Organization A"
 }
 ```
-
+<!-- tabs:end -->
+<!-- tabs:start -->
 # **Response**
 
 ```json
@@ -220,7 +224,8 @@ PUT `/organizations/3fedcab7-97b7-4f81-b49f-2a70864f7cfa?fields=name,employees.n
   ]
 }
 ```
-
+<!-- tabs:end -->
+<!-- tabs:start -->
 # **Response**
 
 ```json
@@ -370,18 +375,21 @@ instead of adding a huge number of permissions to a user.
 
 Typically, this is done by adding a Filter that can calculate these.
 
+<!-- tabs:start -->
+# **Micronaut**
 ```java
 
-@Filter("/**")
-class PermissionContextEnricher implements HttpServerFilter {
+@ServerFilter(Filter.MATCH_ALL_PATTERN)
+class PermissionContextEnricher extends ApizedServerFilter {
   @Inject
   BookingRepository bookingRepository;
 
   @Inject
   ApizedConfig config;
 
-  @Override
-  public Publisher<MutableHttpResponse<?>> doFilter(HttpRequest<?> request, ServerFilterChain chain) {
+  @RequestFilter
+  @ExecuteOn(TaskExecutors.BLOCKING)
+  void filterRequest(HttpRequest<?> request) {
     User user = ApizedContext.getSecurity().getUser();
 
     if (ApizedContext.getRequest().getPathVariables().get("booking") != null) {
@@ -400,10 +408,11 @@ class PermissionContextEnricher implements HttpServerFilter {
 
   @Override
   public int getOrder() {
-    return -1000;
+    return ServerFilterPhase.SECURITY.after();
   }
 }
 ```
+<!-- tabs:end -->
 
 ## Federation
 
