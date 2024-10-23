@@ -52,6 +52,18 @@ public class Organization extends BaseModel {
 }
 ```
 
+# **Spring**
+
+```java
+
+@Entity // (1)
+@Apized // (2)
+public class Organization extends BaseModel {
+  @NotBlank // (3)
+  private String name;
+}
+```
+
 <!-- tabs:end -->
 
 > 1. `@Entity` marks the entity as being stored on the DB.
@@ -395,6 +407,10 @@ class PermissionContextEnricher extends ApizedServerFilter {
   @RequestFilter
   @ExecuteOn(TaskExecutors.BLOCKING)
   void filterRequest(HttpRequest<?> request) {
+    if (shouldExclude(request.getServletPath())) {
+      return;
+    }
+
     User user = ApizedContext.getSecurity().getUser();
 
     if (ApizedContext.getRequest().getPathVariables().get("booking") != null) {
@@ -408,7 +424,48 @@ class PermissionContextEnricher extends ApizedServerFilter {
         ));
       }
     }
-    return chain.proceed(request);
+  }
+
+  @Override
+  public int getOrder() {
+    return ServerFilterPhase.SECURITY.after();
+  }
+}
+```
+
+# **Spring**
+
+```java
+
+@Component
+class PermissionContextEnricher extends ApizedServerFilter {
+  @Autowired
+  BookingRepository bookingRepository;
+
+  @Autowired
+  ApizedConfig config;
+
+  @Override
+  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    if (shouldExclude(request.getServletPath())) {
+      filterChain.doFilter(request, response);
+      return;
+    }
+
+    User user = ApizedContext.getSecurity().getUser();
+
+    if (ApizedContext.getRequest().getPathVariables().get("booking") != null) {
+      Optional<Booking> optBooking = bookingRepository.get(ApizedContext.getRequest().getPathVariables().get("booking"));
+
+      if (optBooking.isPresent() && user.getId().equals(optBooking.get().getOwner())) {
+        Booking booking = optBooking.get();
+        user.getInferredPermissions().addAll(List.of(
+          config.getSlug() + ".booking.get." + booking.getId(),
+          config.getSlug() + ".booking.update." + booking.getId() + ".owner"
+        ));
+      }
+    }
+    chain.doFilter(request, response);
   }
 
   @Override
