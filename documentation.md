@@ -38,7 +38,7 @@ All models must extend the `BaseModel` class which defines a set of default fiel
 The `createdBy`, `createdAt`, `lastUpdatedBy` and `lastUpdatedAt` fields provide a quick audit overview of the instance
 while the `metadata` field stores data we might want to have associated with the model but is not part of our model.
 
-<!-- tabs:end -->
+<!-- tabs:start -->
 
 # **Micronaut**
 
@@ -52,7 +52,7 @@ public class Organization extends BaseModel {
 }
 ```
 
-<!-- tabs:start -->
+<!-- tabs:end -->
 
 > 1. `@Entity` marks the entity as being stored on the DB.
 
