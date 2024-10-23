@@ -39,7 +39,9 @@ The `createdBy`, `createdAt`, `lastUpdatedBy` and `lastUpdatedAt` fields provide
 while the `metadata` field stores data we might want to have associated with the model but is not part of our model.
 
 <!-- tabs:end -->
+
 # **Micronaut**
+
 ```java
 
 @Entity // (1)
@@ -49,6 +51,7 @@ public class Organization extends BaseModel {
   private String name;
 }
 ```
+
 <!-- tabs:start -->
 
 > 1. `@Entity` marks the entity as being stored on the DB.
@@ -376,7 +379,9 @@ instead of adding a huge number of permissions to a user.
 Typically, this is done by adding a Filter that can calculate these.
 
 <!-- tabs:start -->
+
 # **Micronaut**
+
 ```java
 
 @ServerFilter(Filter.MATCH_ALL_PATTERN)
@@ -412,6 +417,7 @@ class PermissionContextEnricher extends ApizedServerFilter {
   }
 }
 ```
+
 <!-- tabs:end -->
 
 ## Federation
