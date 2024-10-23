@@ -72,6 +72,12 @@ public class Organization extends BaseModel {
 
 > 3`@NotBlank` javax.validation.constraints for your fields.
 
+### Scope
+
+Scope defines, as the name implies, the scope of a model. This allows Apized to establish a hierarchy for the models
+that is used for both creating the endpoint and knowing what endpoints to call when using the included integration
+testing tools. Scope is defined in the `@Apized` annotation by defining the parent Model.
+
 ### Behaviour
 
 Apized follows the Controller-Service-Repository pattern. These layers are auto-generated for you at
@@ -207,8 +213,10 @@ PUT `/organizations/3fedcab7-97b7-4f81-b49f-2a70864f7cfa?fields=name`
   "name": "Organization A"
 }
 ```
+
 <!-- tabs:end -->
 <!-- tabs:start -->
+
 # **Response**
 
 ```json
@@ -239,8 +247,10 @@ PUT `/organizations/3fedcab7-97b7-4f81-b49f-2a70864f7cfa?fields=name,employees.n
   ]
 }
 ```
+
 <!-- tabs:end -->
 <!-- tabs:start -->
+
 # **Response**
 
 ```json
@@ -338,7 +348,8 @@ manipulate what this snapshot will look like on your ESB message.
 
 ## Testing
 
-Testing is done with groovy & Spock for simplicity. Integration testing also included with most of the building blocks in
+Testing is done with groovy & Spock for simplicity. Integration testing also included with most of the building blocks
+in
 place.
 
 ## Documentation
@@ -383,12 +394,112 @@ Authentication is assumed to be with tokens. These can be passed via the `Author
 format `Bearer [token]` or alternatively via a cookie (particularly useful for web UIs). The cookie name is configurable
 with the `apized.cookie` application property and defaults to `token`.
 
+### Runtime evaluation
+
 For more advanced use of permissions we also support the concept of inferred permissions. This refers to permissions
 the user is granted from the context he is in rather than having the permissions explicitly added to them. This is
 particularly useful when dealing with models that have ownership since it allows us to infer the permissions at runtime
 instead of adding a huge number of permissions to a user.
 
-Typically, this is done by adding a Filter that can calculate these.
+This can be achieved via 3 distinct methods.
+
+#### Ownership
+
+By marking a field as the holder of the ownership using the `@Owner` annotation.
+
+<!-- tabs:start -->
+
+# **Micronaut**
+
+```java
+
+@Entity
+@Apized
+public class Booking extends BaseModel {
+  @Owner(actions = { Action.GET }, permissions = @Permission(action = Action.UPDATE, fields = "owner"))
+  private UUID owner;
+}
+```
+
+# **Spring**
+
+```java
+
+@Entity
+@Apized
+public class Booking extends BaseModel {
+  @Owner(actions = { Action.GET }, permissions = @Permission(action = Action.UPDATE, fields = "owner"))
+  private UUID owner;
+}
+```
+
+<!-- tabs:end -->
+
+#### Permission Enricher
+
+The permissions can be inferred for a specific model by using a server PermissionEnricher that can calculate them.
+
+<!-- tabs:start -->
+
+# **Micronaut**
+
+```java
+
+@Singleton
+@PermissionEnricher(Order.class)
+public class OrderPermissionEnricher implements PermissionEnricherHandler<Order> {
+  @Inject
+  BookingRepository bookingRepository;
+
+  @Override
+  public boolean enrich(Class<Model> type, Action action, Execution<Order> execution) {
+    User user = ApizedContext.getSecurity().getUser();
+    Order order = orderRepository.get(execution.getId()).orElseThrow(NotFoundException::new);
+
+    if (order.getOwner().equals(user.getId())) {
+      user.getInferredPermissions().addAll(List.of(
+        config.getSlug() + ".booking.get." + booking.getId(),
+        config.getSlug() + ".booking.update." + booking.getId() + ".owner"
+      ));
+      return true;
+    }
+    return false;
+  }
+}
+```
+
+# **Spring**
+
+```java
+
+@Component
+@PermissionEnricher(Order.class)
+public class OrderPermissionEnricher implements PermissionEnricherHandler<Order> {
+  @Autowired
+  BookingRepository bookingRepository;
+
+  @Override
+  public boolean enrich(Class<Model> type, Action action, Execution<Order> execution) {
+    User user = ApizedContext.getSecurity().getUser();
+    Order order = orderRepository.get(execution.getId()).orElseThrow(NotFoundException::new);
+
+    if (order.getOwner().equals(user.getId())) {
+      user.getInferredPermissions().addAll(List.of(
+        config.getSlug() + ".booking.get." + booking.getId(),
+        config.getSlug() + ".booking.update." + booking.getId() + ".owner"
+      ));
+      return true;
+    }
+    return false;
+  }
+}
+```
+
+<!-- tabs:end -->
+
+#### Server Filter
+
+The permissions can be inferred globally by using a server Filter that can calculate them.
 
 <!-- tabs:start -->
 
