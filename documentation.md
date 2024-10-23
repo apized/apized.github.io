@@ -326,12 +326,12 @@ manipulate what this snapshot will look like on your ESB message.
 
 ## Testing
 
-Testing is done with groovy & Spock for simplicity. Integratin testing also included with most of the building blocks in
+Testing is done with groovy & Spock for simplicity. Integration testing also included with most of the building blocks in
 place.
 
 ## Documentation
 
-Our generated Controllers are annotated with OpenAPI annotations and therefore you get openapi documentation out of the
+Our generated Controllers are annotated with OpenAPI annotations, and therefore you get openapi documentation out of the
 box.
 
 ## Security
@@ -371,7 +371,7 @@ Authentication is assumed to be with tokens. These can be passed via the `Author
 format `Bearer [token]` or alternatively via a cookie (particularly useful for web UIs). The cookie name is configurable
 with the `apized.cookie` application property and defaults to `token`.
 
-For more advanced use of permissions we also support the concept of inferred permissions. This referes to permissions
+For more advanced use of permissions we also support the concept of inferred permissions. This refers to permissions
 the user is granted from the context he is in rather than having the permissions explicitly added to them. This is
 particularly useful when dealing with models that have ownership since it allows us to infer the permissions at runtime
 instead of adding a huge number of permissions to a user.
@@ -431,7 +431,7 @@ object of your query to the servers that contain that model directly.
 
 [Micronaut](https://micronaut.io/) is the default underlying engine for apized. The micronaut
 advantages that make it our default choice is the reflection free approach which will drastically improve startup times.
-Apized is also fully compatible with native compilation, which means you can deploy light-weight ulta-performant native
+Apized is also fully compatible with native compilation, which means you can deploy light-weight ultra-performant native
 binaries.
 
 ### Spring Boot
