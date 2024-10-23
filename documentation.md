@@ -15,8 +15,9 @@ model and should therefore be exposed in the form of a controller (and accompany
 In the simplest case of a CRUD server this is all you would need. For more complex scenarios we add Behaviours, which
 should encapsulate small self-contained pieces of business logic.
 
-Sometimes a behaviour can be considered as a part of the service (logic shared between differnet behaviours) and for
-these cases we allow extensions the service. Repositories can also be extended to allow for custom-made queries.
+Sometimes a behaviour can be considered as a part of the service (logic shared between different behaviours) and for
+these cases we allow extensions the service. Controllers and Repositories can also be extended to allow for request
+customization for the former and custom-made queries for the latter.
 
 ## Core concepts
 
@@ -40,27 +41,53 @@ while the `metadata` field stores data we might want to have associated with the
 ```java
 
 @Entity // (1)
-@Serdeable // (2)
-@Apized // (3)
+@Apized // (2)
 public class Organization extends BaseModel {
-  @NotBlank // (4)
+  @NotBlank // (3)
   private String name;
 }
 ```
 
 > 1. `@Entity` marks the entity as being stored on the DB.
 
-> 2. `@Serdeable` marks the entity as being serializable (API).
+> 2. `@Apized` marks the entity as an apized entity.
 
-> 3. `@Apized` marks the entity as an apized entity.
-
-> 4. `@NotBlank` javax.validation.constraints for your fields.
+> 3`@NotBlank` javax.validation.constraints for your fields.
 
 ### Behaviour
 
+Apized follows the Controller-Service-Repository pattern. These layers are auto-generated for you at
+compile time. The behaviours form a request execution pipeline. Behaviours encapsulate a given business requirement in
+its own class
+and leaves nice and isolated.
+
 ### Extensions
 
+You can extend the generated controller, service and repository layers by implementing extensions.
+Controllers, Services and Repositories can also be extended to allow for:
+
+- Controllers: Redefinition of endpoints, custom endpoints.
+- Service: Shared functionality between multiple callers.
+- Repository: Custom queries. These can be both in the form of dynamic finders (declare the method with a specific
+  naming convention) or as @Query annotations (you write your own query).
+
 ### Context
+
+A context is created for each request that comes in to the server. The same is true for processing messages from an ESB.
+The context contains is broken down into the following:
+
+- RequestContext: This context holds the timestamp of the request, the fields that were requested, the path variables,
+  the search, sort, other query parameters and headers that were sent in the REST request.
+- SecurityContext: The user and the token used for this request. If you require to manually check permissions, use this
+  user object's `isAllowed` method to validate.
+- SerdeContext: This context is used for the serialization and de-serialization of the requests/responses. It holds the
+  stack and does some caching for optimization. The caching is done per request.
+- FederationContext: Holds a cache in order to optimize the retrieval of duplicate federated models. This caching is
+  done per request.
+- AuditContext: Holds all the audit trail entries collected during the execution. These will only be saved to the
+  database if the request succeeds.
+- EventContext: Holds all the events collected during the execution. These will only be sent to the ESB if the request
+  succeeds.
 
 ## Enhanced REST Endpoints
 
